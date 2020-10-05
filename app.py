@@ -46,16 +46,19 @@ class MakePrediction1(Resource):
         b3 = posted_data1["Bearing3"]
         b4 = posted_data1["Bearing4"]
         b_comb = np.array([b1,b2,b3,b4]).reshape(1,4)
-        scaler = joblib.load("Source/Models/scaler_file")
-        b_comb = scaler.transform(b_comb)
-        dl_pred = model_DL.predict(b_comb.reshape(b_comb.shape[0], 1, b_comb.shape[1]))
-        dl_pred = dl_pred.reshape(dl_pred.shape[0], dl_pred.shape[2])
-        score = np.mean(np.abs(dl_pred-b_comb), axis = 1)
-        threshold = 0.29
-        if score < threshold:
-            op = 1
+        if ((b1==0.0) & (b2==0.0) & (b3==0.0) & (b4==0.0)):
+            op = 0
         else:
-            op = -1
+            scaler = joblib.load("Source/Models/scaler_file")
+            b_comb = scaler.transform(b_comb)
+            dl_pred = model_DL.predict(b_comb.reshape(b_comb.shape[0], 1, b_comb.shape[1]))
+            dl_pred = dl_pred.reshape(dl_pred.shape[0], dl_pred.shape[2])
+            score = np.mean(np.abs(dl_pred-b_comb), axis = 1)
+            threshold = 0.29
+            if score < threshold:
+                op = 1
+            else:
+                op = -1
         Aop1 = Anomaly_output(op)
         return jsonify({"Output": Aop1})
             

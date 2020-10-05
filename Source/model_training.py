@@ -11,7 +11,7 @@ from sklearn.neighbors import LocalOutlierFactor
 
 # Load and Combine the Dataset
 combined_data = pd.DataFrame()
-data_dir = 'Data/'
+data_dir = '../Data/'
 # Iterate through all the files
 for file_name in os.listdir(data_dir):
     df = pd.read_csv(os.path.join(data_dir, file_name), sep='\t')
