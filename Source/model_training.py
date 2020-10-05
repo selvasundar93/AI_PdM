@@ -2,10 +2,12 @@
 import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import scipy.stats
 import pickle
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM,TimeDistributed, RepeatVector
+import joblib
+from sklearn.neighbors import LocalOutlierFactor
 
 # Load and Combine the Dataset
 combined_data = pd.DataFrame()
@@ -52,23 +54,6 @@ combined_data = combined_data.sort_index()
 # Drop Last 2 rows
 combined_data = combined_data[:-2]
 
-# Data Visualization
-fig, ax = plt.subplots(figsize=(15,7))
-ax.plot(combined_data['Bearing1_Mean'], label='Bearing1 Mean', color='red',linewidth=1)
-ax.plot(combined_data['Bearing1_RMS'], label='Bearing1 RMS', color='blue', linewidth=1)
-plt.xlabel('Date_Time')
-plt.ylabel("Amplitude")
-plt.legend(loc='best')
-ax.set_title('Bearing1 Sensor Data', fontsize=16)
-plt.show()
-fig, ax = plt.subplots(figsize=(15,7))
-ax.plot(combined_data['Bearing1_Kurt'], label='Bearing1 Kurtosis', color='green', linewidth=1)
-plt.xlabel('Date_Time')
-plt.ylabel("Amplitude")
-plt.legend(loc='best')
-ax.set_title('Bearing1 Sensor Data', fontsize=16)
-plt.show()
-
 # Convert index into Samples (time steps) for easier interpretation
 new_comb_data = combined_data.copy()
 new_comb_data['time_steps'] = np.arange(0,len(combined_data))
@@ -80,59 +65,52 @@ training = new_comb_data.iloc[:450,:]
 test = new_comb_data.iloc[450:,:]
 test.reset_index(inplace=True)
 
-# Function to Visualize the results
-def viz_result(data,pred,title):
-    fig, ax = plt.subplots(nrows=2,figsize=(15,8))
-    ax[0].plot(data, label='Bearing Signal', color='red',linewidth=1)
-    ax[1].scatter(range(0,len(pred)),pred, label='Anomaly (-1)')
-    ax[0].legend()
-    ax[1].legend()
-    plt.show()
-    viz_df=pd.DataFrame({'Bearing':data,'No_Anomaly':pred})
-    plt.figure(figsize=(15,8))
-    sns.scatterplot(x=range(0,len(viz_df)),y=viz_df.Bearing,hue=viz_df.No_Anomaly,palette="deep")
-    plt.plot(data, color='black',linewidth=1,alpha=0.5)
-    plt.xlabel('Samples')
-    plt.ylabel('Amplitude')
-    plt.title(title)
-    plt.show()
-    
 # Local Outlier Factor on RMS values
-from sklearn.neighbors import LocalOutlierFactor
 lof_rms = LocalOutlierFactor(n_neighbors=20, contamination=0.002,novelty=True)
 lof_rms.fit(training['Bearing1_RMS'].values.reshape(-1,1))
-
-# Testing on Entire dataset
-pred_lof_rms = lof_rms.predict(new_comb_data['Bearing1_RMS'].values.reshape(-1,1))
-unique_elements, counts_elements = np.unique(pred_lof_rms, return_counts=True)
-print("LOF - RMS - Testing on Entire dataset")
-print("Anomaly\t"+str(unique_elements[0])+"\t"+str(counts_elements[0]))
-try:
-    print("Normal \t"+str(unique_elements[1])+"\t"+str(counts_elements[1]))
-except:
-    print("No Normal data")
-viz_result(new_comb_data['Bearing1_RMS'],pred_lof_rms,'Bearing Vibration (RMS) - Local Outlier Factor')
 
 # Save the model
 with open('Models\lof_rms_trained_model.pkl', 'wb') as f:
     pickle.dump(lof_rms, f)
 
 # Local Outlier Factor on Mean values
-from sklearn.neighbors import LocalOutlierFactor
 lof_mean = LocalOutlierFactor(n_neighbors=20, contamination=0.004,novelty=True)
 lof_mean.fit(training['Bearing1_Mean'].values.reshape(-1,1))
-
-# Testing on Entire dataset
-pred_lof_mean = lof_mean.predict(new_comb_data['Bearing1_Mean'].values.reshape(-1,1))
-unique_elements, counts_elements = np.unique(pred_lof_mean, return_counts=True)
-print("LOF - Mean - Testing on Entire dataset")
-print("Anomaly\t"+str(unique_elements[0])+"\t"+str(counts_elements[0]))
-try:
-    print("Normal \t"+str(unique_elements[1])+"\t"+str(counts_elements[1]))
-except:
-    print("No Normal data")
-viz_result(new_comb_data['Bearing1_Mean'],pred_lof_mean,'Bearing Vibration (Mean) - Local Outlier Factor')
 
 # Save the model
 with open('Models\lof_mean_trained_model.pkl', 'wb') as f:
     pickle.dump(lof_mean, f)
+    
+# Deep Learning LSTM - Autoencoder
+train = combined_data[:'2004-02-15 12:42:39']
+test = combined_data['2004-02-15 12:52:39':]
+
+# To Consider only Bearing Mean values
+train = train.iloc[:,:4]
+test = test.iloc[:,:4]
+
+# Feature Scaling
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+train_scaled = scaler.fit_transform(train)
+test_scaled = scaler.transform(test)
+joblib.dump(scaler, "Models\scaler_file")
+
+# Reshape Inputs for LSTM
+X_train = train_scaled.reshape(train_scaled.shape[0], 1, train_scaled.shape[1])
+X_test = test_scaled.reshape(test_scaled.shape[0], 1, test_scaled.shape[1])
+
+# LSTM Autoencoder - DL Model
+dl_model = Sequential([
+    LSTM(16, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
+    LSTM(4, activation='relu', return_sequences=False),
+    RepeatVector(X_train.shape[1]),
+    LSTM(4, activation='relu', return_sequences=True),
+    LSTM(16, activation='relu', return_sequences=True),
+    TimeDistributed(Dense(X_train.shape[2]))])
+dl_model.compile(optimizer='adam', loss='mae')
+
+nb_epochs = 100
+batch_size = 10
+dl_model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size, validation_split=0.05)
+dl_model.save("Models\LSTM_Autoencoder.h5")

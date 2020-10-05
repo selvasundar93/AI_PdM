@@ -1,0 +1,6 @@
+pickle
+numpy
+flask
+flask_restful
+joblib
+tensorflow==2.1.0
