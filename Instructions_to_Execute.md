@@ -35,7 +35,7 @@ Bearing1_Kurt|__Kurtosis__ Value of 1 sec Vibration Signal of __Bearing 1__ at *
 Bearing1_RMS_Prev|__Root Mean Square__ Value of 1 sec Vibration Signal of __Bearing 1__ at *time t-1*
 Bearing1_Kurt_Prev|__Kurtosis__ Value of 1 sec Vibration Signal of __Bearing 1__ at *time t-1*
 
-#### Notes
+#### Note:
 * Three outputs are possible (Anomaly Detection): Normal, Anomaly, No Proper Input
 	* __Normal__ : Vibrations in Normal Range - Healthy State
 	* __Anomaly__: Vibrations exceeds Normal Range - Unhealthy / Possibility of failure in near future
