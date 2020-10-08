@@ -3,4 +3,7 @@ numpy
 flask
 flask_restful
 joblib
+scikit-learn
+pandas
+reliability
 tensorflow==2.1.0

@@ -8,12 +8,13 @@ import joblib
 app = Flask(__name__)
 api = Api(app)
 
+# Load pre-trained Models
 global model_DL
 model_DL = tf.keras.models.load_model('Source/Models/LSTM_Autoencoder.h5')
 
-
 model_rms = pickle.load(open('Source/Models/lof_rms_trained_model.pkl', 'rb'))
 model_mean = pickle.load(open('Source/Models/lof_mean_trained_model.pkl', 'rb'))
+model_dt = pickle.load(open('Source/Models/DT_Classifier.pkl', 'rb'))
 
 def Anomaly_output(x):
     if x==1:
@@ -23,6 +24,25 @@ def Anomaly_output(x):
     else:
         return "No Proper Input"
 
+def class_ff(x):
+    switch={
+        1:'0-20%',
+        2:'20-40%',
+        3:'40-60%',
+        4:'20-40%',
+        5:'0-20%'}
+    return switch.get(x)
+
+def class_rul(x):
+    switch={
+        1:'80%',
+        2:'60%',
+        3:'40%',
+        4:'20%',
+        5:'<20%'}
+    return switch.get(x)
+
+# Univariate Anomaly Detection - RMS or Mean
 class MakePrediction(Resource):
     def post(self):
         posted_data = request.get_json()
@@ -38,6 +58,7 @@ class MakePrediction(Resource):
         Aop = Anomaly_output(op)
         return jsonify({"Output": Aop})
 
+# Multivariate Anomaly Detection - Mean Value
 class MakePrediction1(Resource):
     def post(self):
         posted_data1 = request.get_json()
@@ -61,10 +82,31 @@ class MakePrediction1(Resource):
                 op = -1
         Aop1 = Anomaly_output(op)
         return jsonify({"Output": Aop1})
-            
-api.add_resource(MakePrediction, '/predict_uni')    
-api.add_resource(MakePrediction1, '/predict_multi')  
-    
+# RUL Prediction
+class RULPrediction(Resource):
+    def post(self):
+        posted_data2 = request.get_json()
+        b_r = posted_data2["Bearing1_RMS"]
+        b_k = posted_data2["Bearing1_Kurt"]
+        b_r_p = posted_data2["Bearing1_RMS_Prev"]
+        b_k_p = posted_data2["Bearing1_Kurt_Prev"]
+        if ((b_r==0.0) & (b_k==0.0) & (b_r_p==0.0) & (b_k_p==0.0)):
+            return jsonify({"RUL_Class": "No Proper Input",
+                        "Fraction Failing": "No Proper Input",
+                        "RUL": "No Proper Input"})
+        else:
+        	b_comb1 = np.array([b_r,b_k,b_r_p,b_k_p]).reshape(1,4)
+        	rul_pred = model_dt.predict(b_comb1)
+        	ff = class_ff(int(rul_pred))
+        	rul_val = class_rul(int(rul_pred))
+        	return jsonify({"RUL_Class": int(rul_pred),
+                        "Fraction Failing": ff,
+                        "RUL":rul_val})
+           
+api.add_resource(MakePrediction, '/Ano_Det_Uni')    
+api.add_resource(MakePrediction1, '/Ano_Det_Multi')  
+api.add_resource(RULPrediction, '/RUL_Predict') 
+   
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000,debug=True)
 

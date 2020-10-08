@@ -72,6 +72,7 @@ lof_rms.fit(training['Bearing1_RMS'].values.reshape(-1,1))
 # Save the model
 with open('Models\lof_rms_trained_model.pkl', 'wb') as f:
     pickle.dump(lof_rms, f)
+print("LOF-RMS Model Saved")
 
 # Local Outlier Factor on Mean values
 lof_mean = LocalOutlierFactor(n_neighbors=20, contamination=0.004,novelty=True)
@@ -80,7 +81,8 @@ lof_mean.fit(training['Bearing1_Mean'].values.reshape(-1,1))
 # Save the model
 with open('Models\lof_mean_trained_model.pkl', 'wb') as f:
     pickle.dump(lof_mean, f)
-    
+print("LOF-Mean Model Saved")
+
 # Deep Learning LSTM - Autoencoder
 train = combined_data[:'2004-02-15 12:42:39']
 test = combined_data['2004-02-15 12:52:39':]
@@ -114,3 +116,4 @@ nb_epochs = 100
 batch_size = 10
 dl_model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size, validation_split=0.05)
 dl_model.save("Models\LSTM_Autoencoder.h5")
+print("LSTM-Autoencoder Model Saved")
