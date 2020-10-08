@@ -1,5 +1,5 @@
 # AI Techniques for Predictive Maintenance
-## Instructions to Execute & get response from API
+## Instructions to Execute 
 * Run app.py by executing the command __python app.py__ in terminal
 * Use Browser, Jupyter Notebook or any Script to send & receive data from this API
 ### Univariate Anomaly Detection
