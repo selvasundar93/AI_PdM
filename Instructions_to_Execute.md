@@ -41,3 +41,4 @@ Bearing1_Kurt_Prev|__Kurtosis__ Value of 1 sec Vibration Signal of __Bearing 1__
 	* __Anomaly__: Vibrations exceeds Normal Range - Unhealthy / Possibility of failure in near future
 	* __No Proper Input__ : If all inputs are "0" - Sensor Fault / Machine is turned off
 * For accurate prediction, input values must be given with atleast four decimal places (Ex: 0.0825)
+* Refer Tests folder for feature engineered dataset
