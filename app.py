@@ -42,6 +42,10 @@ def class_rul(x):
         5:'<20%'}
     return switch.get(x)
 
+@app.route('/')
+def home_endpoint():
+    return 'Anomaly Detection & RUL Estimation'
+
 # Univariate Anomaly Detection - RMS or Mean
 class MakePrediction(Resource):
     def post(self):
