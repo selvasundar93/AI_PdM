@@ -1,7 +1,7 @@
 # AI Techniques for Predictive Maintenance
 ## Instructions to Execute 
 * Run app.py by executing the command __python app.py__ in terminal
-* Use Browser, Jupyter Notebook or any Script to send & receive data from this API
+* Use Jupyter Notebook or any Script to send & receive data from this API
 ### Univariate Anomaly Detection
 * URL - Endpoint = "127.0.0.1:5000/Ano_Det_Uni"
 * Load __"{"rms":value,"mean":value}"__ as JSON data
