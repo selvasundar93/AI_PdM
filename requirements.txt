@@ -1,9 +1,9 @@
-pickle
 numpy
+pandas
+scikit-learn
 flask
 flask_restful
 joblib
-scikit-learn
-pandas
+pickle-mixin
 reliability
 tensorflow==2.1.0
