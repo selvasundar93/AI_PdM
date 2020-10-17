@@ -65,7 +65,7 @@ Class | RMS_Feature (Range) | Fraction Failing | RUL
 2 | 0.001-0.0035 | 20-40% | 60%
 3 | 0.0035-0.011 | 40-60% | 40%
 4 | 0.011-0.037 | 60-80% | 20%
-5 | < 0.037 | 80-100% | < 20%
+5 | > 0.037 | 80-100% | < 20%
 '''
 
 # Create funtion to find the corresponding class from RMS_Feature
