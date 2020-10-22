@@ -9,3 +9,4 @@
 * Docker must be installed in the local computer
 * In the command *__docker run -p 127.0.0.1:8001:5000 selvasundar/ai-pdm-docker__*, -p refers to Port Forwarding
 * Use the same IP & Port (*__127.0.0.1:8001__*) for accessing the API
+* Refer __*API_Tests_Container*__ Notebook for examples
