@@ -11,7 +11,6 @@ api = Api(app)
 # Load pre-trained Models
 global model_DL
 model_DL = tf.keras.models.load_model('Source/Models/LSTM_Autoencoder.h5')
-
 model_rms = pickle.load(open('Source/Models/lof_rms_trained_model.pkl', 'rb'))
 model_mean = pickle.load(open('Source/Models/lof_mean_trained_model.pkl', 'rb'))
 model_dt = pickle.load(open('Source/Models/DT_Classifier.pkl', 'rb'))

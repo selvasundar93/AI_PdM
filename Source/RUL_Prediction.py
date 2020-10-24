@@ -103,6 +103,6 @@ clf_dt_1 = DecisionTreeClassifier(max_depth=3,random_state=0)
 clf_dt_1.fit(X_train,y_train)
 
 # Save the model
-with open('Models\DT_Classifier.pkl', 'wb') as f:
+with open('Models/DT_Classifier.pkl', 'wb') as f:
     pickle.dump(clf_dt_1, f)
 print("Decision Tree Classifier Model Saved")

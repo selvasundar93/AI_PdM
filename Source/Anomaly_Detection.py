@@ -27,26 +27,20 @@ for file_name in os.listdir(data_dir):
     df_b4_mean = np.mean(np.absolute(df_b4))
     # To calculate RMS
     df_b1_rms = np.sqrt((np.sum(df_b1**2))/len(df_b1))
-    df_b2_rms = np.sqrt((np.sum(df_b2**2))/len(df_b2))
-    df_b3_rms = np.sqrt((np.sum(df_b3**2))/len(df_b3))
-    df_b4_rms = np.sqrt((np.sum(df_b4**2))/len(df_b4))
+
     # To calculate kurtosis
     df_b1_kurt = scipy.stats.kurtosis(df_b1,fisher=False)
-    df_b2_kurt = scipy.stats.kurtosis(df_b2,fisher=False)
-    df_b3_kurt = scipy.stats.kurtosis(df_b3,fisher=False)
-    df_b4_kurt = scipy.stats.kurtosis(df_b4,fisher=False)
+
     # Concate into Pandas DataFrame
     df_1 = pd.concat([pd.Series(df_b1_mean),pd.Series(df_b2_mean),pd.Series(df_b3_mean),pd.Series(df_b4_mean),\
-                      pd.Series(df_b1_rms),pd.Series(df_b2_rms),pd.Series(df_b3_rms),pd.Series(df_b4_rms),\
-                      pd.Series(df_b1_kurt),pd.Series(df_b2_kurt),pd.Series(df_b3_kurt),pd.Series(df_b4_kurt)],axis=1)
+                      pd.Series(df_b1_rms),pd.Series(df_b1_kurt)],axis=1)
     df_1.index = [file_name]   
     # Append individual dataframes to create a single combined dataset
     combined_data = combined_data.append(df_1)
     
 # Insert Column headers    
 combined_data.columns = ['Bearing1_Mean','Bearing2_Mean','Bearing3_Mean','Bearing4_Mean',\
-                         'Bearing1_RMS','Bearing2_RMS','Bearing3_RMS','Bearing4_RMS',\
-                        'Bearing1_Kurt','Bearing2_Kurt','Bearing3_Kurt','Bearing4_Kurt']
+                         'Bearing1_RMS','Bearing1_Kurt']
 combined_data.index = pd.to_datetime(combined_data.index, format='%Y.%m.%d.%H.%M.%S')
 
 # Sort the index in chronological order
@@ -70,7 +64,7 @@ lof_rms = LocalOutlierFactor(n_neighbors=20, contamination=0.002,novelty=True)
 lof_rms.fit(training['Bearing1_RMS'].values.reshape(-1,1))
 
 # Save the model
-with open('Models\lof_rms_trained_model.pkl', 'wb') as f:
+with open('Models/lof_rms_trained_model.pkl', 'wb') as f:
     pickle.dump(lof_rms, f)
 print("LOF-RMS Model Saved")
 
@@ -79,7 +73,7 @@ lof_mean = LocalOutlierFactor(n_neighbors=20, contamination=0.004,novelty=True)
 lof_mean.fit(training['Bearing1_Mean'].values.reshape(-1,1))
 
 # Save the model
-with open('Models\lof_mean_trained_model.pkl', 'wb') as f:
+with open('Models/lof_mean_trained_model.pkl', 'wb') as f:
     pickle.dump(lof_mean, f)
 print("LOF-Mean Model Saved")
 
@@ -96,7 +90,7 @@ from sklearn.preprocessing import MinMaxScaler
 scaler = MinMaxScaler()
 train_scaled = scaler.fit_transform(train)
 test_scaled = scaler.transform(test)
-joblib.dump(scaler, "Models\scaler_file")
+joblib.dump(scaler, "Models/scaler_file")
 
 # Reshape Inputs for LSTM
 X_train = train_scaled.reshape(train_scaled.shape[0], 1, train_scaled.shape[1])
@@ -115,5 +109,5 @@ dl_model.compile(optimizer='adam', loss='mae')
 nb_epochs = 100
 batch_size = 10
 dl_model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size, validation_split=0.05)
-dl_model.save("Models\LSTM_Autoencoder.h5")
+dl_model.save("Models/LSTM_Autoencoder.h5")
 print("LSTM-Autoencoder Model Saved")
